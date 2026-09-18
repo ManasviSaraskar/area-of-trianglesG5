@@ -11,6 +11,8 @@ import ReflectPhase from './components/phases/ReflectPhase.jsx';
 import questionBank from './data/questionBank.js';
 import { checkBadges } from './utils/badgeEngine.js';
 import { calcTotalStars } from './utils/scoring.js';
+import { Volume2, VolumeX } from 'lucide-react';
+import { stopAudio } from './hooks/useAudio.js';
 import './App.css';
 
 const SESSION_KEY = 'intellia_area_triangles_v1';
@@ -172,50 +174,59 @@ export default function App() {
   };
 
   return (
-    <div className="app-wrapper">
-      {/* Top Header Bar */}
-      <header className="top-bar">
-        <div className="top-bar-brand">
-          {state.phase !== 'intro' ? (
-            <button
-              className="home-btn"
-              onClick={() => dispatch({ type: 'SET_PHASE', payload: 'intro' })}
-              title="Home"
-              aria-label="Return to Home"
-            >
-              🏠 Home
-            </button>
-          ) : (
-            <div className="brand-logo">
-              <span>📐 Triangle Trekkers</span>
-            </div>
-          )}
-        </div>
+    <>
+      <div className="floating-numbers">
+         <div className="floating-number" style={{ top: '10%', left: '10%', animationDelay: '0s' }}>{'📐'}</div>
+         <div className="floating-number" style={{ top: '30%', right: '20%', animationDelay: '2s' }}>{'🔺'}</div>
+         <div className="floating-number" style={{ bottom: '20%', left: '30%', animationDelay: '4s' }}>{'📏'}</div>
+         <div className="floating-number" style={{ bottom: '40%', right: '10%', animationDelay: '6s' }}>{'▲'}</div>
+      </div>
+      <div className="app-container">
+        {/* Audio Mute Button */}
+        <button 
+          onClick={() => dispatch({ type: 'TOGGLE_AUDIO' })} 
+          className="audio-toggle-btn"
+          aria-label="Toggle audio mute"
+        >
+          {!state.audioEnabled ? <VolumeX className="w-6 h-6 text-red-400" /> : <Volume2 className="w-6 h-6 text-white" />}
+        </button>
 
-        <div className="top-bar-center">
-          {state.phase !== 'intro' && (
-            <ProgressMap
-              currentPhase={state.phase}
-              phaseComplete={state.phaseComplete}
-              storyPanel={state.storyPanel}
-            />
-          )}
-        </div>
-
-        <div className="top-bar-actions">
-          <button
-            className="icon-btn"
-            onClick={() => dispatch({ type: 'TOGGLE_AUDIO' })}
-            title={state.audioEnabled ? 'Audio On' : 'Audio Off'}
-            aria-label="Toggle Audio"
-          >
-            {state.audioEnabled ? '🔊' : '🔇'}
+        {/* Home Button */}
+        {state.phase !== 'intro' && (
+          <button className="home-btn" onClick={() => { stopAudio(); dispatch({ type: 'SET_PHASE', payload: 'intro' }); }}>
+            🏠 Home
           </button>
-        </div>
-      </header>
+        )}
 
-      {/* Main View Router */}
-      <main className="main-content">
+        {/* Journey Progress Bar */}
+        {state.phase !== 'intro' && (
+          <div className="journey-bar">
+            {[
+              { id: "wonder", label: "Wonder", icon: "🔍" },
+              { id: "story", label: "Story", icon: "📖" },
+              { id: "simulate", label: "Simulate", icon: "🧪" },
+              { id: "play", label: "Practice", icon: "🎮" },
+              { id: "reflect", label: "Reflect", icon: "📓" }
+            ].map((step, idx) => {
+              const PHASES = ["wonder", "story", "simulate", "play", "reflect"];
+              const isActive = state.phase === step.id;
+              const isPast = PHASES.indexOf(state.phase) > PHASES.indexOf(step.id);
+              return (
+                <div key={step.id} className="journey-step-wrapper" style={{ display: 'flex', alignItems: 'center' }}>
+                  <div className={`journey-step ${isActive ? 'active' : ''} ${isPast ? 'completed' : ''}`}>
+                    <div className="journey-step-dot">{isPast ? '✓' : step.icon}</div>
+                    <div className="journey-step-label">{step.label}</div>
+                  </div>
+                  {idx < 4 && (
+                    <div className={`journey-connector ${isPast ? 'filled' : ''}`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Main View Router */}
         {state.phase === 'intro' && (
           <IntroScreen onStart={handleStart} />
         )}
@@ -223,6 +234,7 @@ export default function App() {
           <WonderPhase
             audioEnabled={state.audioEnabled}
             onComplete={() => dispatch({ type: 'COMPLETE_PHASE', payload: 'wonder' })}
+            onBack={() => dispatch({ type: 'SET_PHASE', payload: 'intro' })}
           />
         )}
         {state.phase === 'story' && (
@@ -230,6 +242,7 @@ export default function App() {
             audioEnabled={state.audioEnabled}
             onPanelChange={(pIdx) => dispatch({ type: 'SET_STORY_PANEL', payload: pIdx })}
             onComplete={() => dispatch({ type: 'COMPLETE_PHASE', payload: 'story' })}
+            onBack={() => dispatch({ type: 'SET_PHASE', payload: 'wonder' })}
           />
         )}
         {state.phase === 'simulate' && (
@@ -265,10 +278,7 @@ export default function App() {
             onFinishLesson={() => dispatch({ type: 'COMPLETE_PHASE', payload: 'reflect' })}
           />
         )}
-      </main>
-
-
-
-    </div>
+      </div>
+    </>
   );
 }

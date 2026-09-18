@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import TriangleSplitterStation from '../simulations/TriangleSplitterStation.jsx';
-import GridCounterStation from '../simulations/GridCounterStation.jsx';
+import TriangleFormulaStation from '../simulations/TriangleFormulaStation.jsx';
 import FormulaBuilderStation from '../simulations/FormulaBuilderStation.jsx';
 import { narrate, stopAudio } from '../../hooks/useAudio.js';
 import { simulateStationANarration, simulateStationBNarration, simulateStationCNarration } from '../../utils/narration.js';
 
 const STATIONS = [
   { id: 0, label: 'A: Triangle Splitter', emoji: '✂️', desc: 'Concrete' },
-  { id: 1, label: 'B: Grid Counter',      emoji: '🔢', desc: 'Pictorial' },
-  { id: 2, label: 'C: Formula Builder',   emoji: '📐', desc: 'Abstract' },
+  { id: 1, label: 'B: Triangle Area Lab', emoji: '🔺', desc: 'Formula' },
+  { id: 2, label: 'C: Formula Builder',   emoji: '⚙️', desc: 'Abstract' },
 ];
 
 const SimulatePhase = ({ audioEnabled, simStationsComplete, onStationComplete, onComplete, dispatch }) => {
@@ -93,13 +93,13 @@ const SimulatePhase = ({ audioEnabled, simStationsComplete, onStationComplete, o
             </span>
             <div>
               {activeStation === 0 && (
-                <><strong>Triangle Splitter (Concrete):</strong> Click the button to split the rectangle along its diagonal. Watch as one triangle peels away to confirm it's exactly half the rectangle's area!</>
+                <><strong>Triangle Splitter (Concrete):</strong> Swipe across the rectangle to split it along its diagonal. Watch as two equal triangles form — each one is exactly half the rectangle's area!</>
               )}
               {activeStation === 1 && (
-                <><strong>Grid Counter (Pictorial):</strong> Look at the triangle on the grid. Count the whole squares (blue) and half squares (orange) inside. Enter the total area in square units.</>
+                <><strong>Triangle Area Lab (Formula):</strong> Use the triangle area formula! Fill in the blanks: <strong>base × height ÷ 2 = Area</strong>. Toggle the bounding rectangle to see how the triangle is exactly half!</>
               )}
               {activeStation === 2 && (
-                <><strong>Formula Builder (Abstract):</strong> Fill in the missing number using the formula: <strong>base × height ÷ 2 = area</strong>. Tap "Show me the grid" for a hint anytime!</>
+                <><strong>Formula Builder (Abstract):</strong> Fill in the missing number using the formula: <strong>base × height ÷ 2 = area</strong>. Pick the right answer from the choices!</>
               )}
             </div>
           </div>
@@ -110,7 +110,7 @@ const SimulatePhase = ({ audioEnabled, simStationsComplete, onStationComplete, o
             />
           )}
           {activeStation === 1 && (
-            <GridCounterStation
+            <TriangleFormulaStation
               onComplete={() => handleStationComplete(1)}
               onStationBPerfect={() => dispatch && dispatch({ type: 'SET_STATION_B_PERFECT' })}
             />

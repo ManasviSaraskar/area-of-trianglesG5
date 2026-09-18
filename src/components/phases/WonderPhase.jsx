@@ -1,85 +1,103 @@
 // components/phases/WonderPhase.jsx
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { narrate, stopAudio } from '../../hooks/useAudio.js';
 import { wonderNarration } from '../../utils/narration.js';
 
+const WonderPhase = ({ onComplete, onBack, audioEnabled = true }) => {
+  const [stage, setStage] = useState(0);
 
-const FLOATING_PARTICLES = ['📐', '🔺', '⛵', '🟦', '🟩', '🛏️', '✨'];
-
-const WonderPhase = ({ onComplete, audioEnabled = true }) => {
   useEffect(() => {
     if (audioEnabled) {
       narrate(wonderNarration());
     }
-    return () => stopAudio();
+    const t1 = setTimeout(() => setStage(1), 300);
+    const t2 = setTimeout(() => setStage(2), 800);
+    return () => {
+      stopAudio();
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, [audioEnabled]);
 
+  const handleDiscover = () => {
+    stopAudio();
+    if (onComplete) {
+      onComplete();
+    }
+  };
 
   return (
-    <div className="phase-container" style={{ textAlign: 'center', position: 'relative' }}>
-      {/* Floating particles background */}
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
-        {FLOATING_PARTICLES.map((particle, i) => (
+    <div className="wonder-phase">
+      <div className="wonder-particles">
+        {Array.from({ length: 20 }).map((_, i) => (
           <span
             key={i}
+            className="wonder-particle"
             style={{
-              position: 'absolute',
-              top: `${10 + (i * 15) % 80}%`,
-              left: `${5 + (i * 137) % 90}%`,
-              fontSize: '2rem',
-              opacity: 0.2,
-              animation: `float ${6 + i * 2}s ease-in-out infinite alternate`,
-              animationDelay: `${i * 0.7}s`,
+              left: `${(i * 19) % 100}%`,
+              top: `${(i * 23) % 100}%`,
+              animationDelay: `${(i * 0.4) % 5}s`,
+              animationDuration: `${8 + (i % 6)}s`,
+              fontSize: `${1.2 + (i % 3) * 0.4}rem`,
             }}
           >
-            {particle}
+            ✨
           </span>
         ))}
       </div>
 
-      {/* Large glowing purple question mark */}
-      <div className="wonder-icon-circle">
-        ?
-      </div>
-
-      {/* Mascot row */}
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-        <div className="mascot-avatar" style={{ width: 54, height: 54, fontSize: '1.8rem' }}>
-          🤖
+      <div className="wonder-content">
+        {/* Large glowing purple question mark */}
+        <div className={`wonder-qmark ${stage >= 1 ? 'revealed' : ''}`}>
+          <span className="wonder-qmark-icon">?</span>
+          <div className="wonder-qmark-glow" />
         </div>
-        <div className="mascot-speech" style={{ fontSize: '0.95rem', padding: '10px 18px' }}>
-          Hmm... I wonder... 🧐
+
+        {/* Mascot + Speech Bubble beside it - exactly matching reffolder */}
+        <div className={`mascot-container wonder-mascot ${stage >= 1 ? 'visible' : ''}`} style={{ margin: '16px 0' }}>
+          <div className="mascot thinking">
+            📐
+          </div>
+          <div className="speech-bubble wonder-bubble">
+            Hmm... I wonder... 🧐
+          </div>
         </div>
-      </div>
 
-      {/* Translucent question card */}
-      <div className="card" style={{ maxWidth: 640, margin: '0 auto 28px', padding: '36px 32px' }}>
-        <div style={{ fontSize: '3rem', marginBottom: 16 }}>⛵</div>
-        <h2 style={{
-          fontFamily: "'Fredoka', cursive",
-          fontSize: '1.5rem',
-          lineHeight: 1.45,
-          color: '#ffffff',
-          marginBottom: 12,
-          fontWeight: 600,
-        }}>
-          Sarah sees a sailboat with a triangular sail in Sydney.<br />
-          <strong>How does she know how much cloth was used to make that sail?</strong>
-        </h2>
-        <p style={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.95rem' }}>
-          Let us find out what area really means!
-        </p>
-      </div>
+        {/* Translucent question card */}
+        <div className={`wonder-question-card ${stage >= 1 ? 'visible' : ''}`} style={{ maxWidth: '800px', margin: '0 auto', padding: '36px 32px' }}>
+          <div className="wonder-emoji">⛵🔺❓</div>
+          <h2 className="wonder-question-text" style={{ fontSize: '1.65rem', lineHeight: '1.5', color: '#ffffff', textAlign: 'center' }}>
+            Sarah sees a sailboat with a triangular sail in Sydney.<br />
+            <strong style={{ color: 'var(--gold)' }}>How does she know how much cloth was used to make that sail?</strong>
+          </h2>
+          <p className="wonder-subtext" style={{ marginTop: '12px' }}>
+            Let's find out what area of a triangle really means! 🚀
+          </p>
+        </div>
 
-      {/* CTA Button */}
-      <button
-        id="wonder-discover-btn"
-        className="btn btn-purple"
-        style={{ fontSize: '1.25rem', padding: '16px 48px' }}
-        onClick={onComplete}
-      >
-        ✨ Let's Discover! ✨
-      </button>
+        {/* CTA Button */}
+        <button
+          id="wonder-discover-btn"
+          className={`btn btn-wonder ${stage >= 2 ? 'visible' : ''}`}
+          style={{ marginTop: '20px' }}
+          onClick={handleDiscover}
+        >
+          <span className="wonder-btn-sparkle">✨</span>
+          Let's Discover! →
+        </button>
+
+        {onBack && (
+          <div style={{ marginTop: '16px' }}>
+            <button
+              onClick={() => { stopAudio(); onBack(); }}
+              className="btn btn-outline"
+              style={{ background: 'rgba(255,255,255,0.08)', padding: '10px 24px', fontSize: '0.95rem' }}
+            >
+              ← Back
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

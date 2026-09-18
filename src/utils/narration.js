@@ -35,7 +35,7 @@ export function simulateStationANarration() {
 
 export function simulateStationBNarration() {
   return [
-    instruct("Count the whole squares and the half squares inside the triangle."),
+    instruct("Use the triangle area formula: base times height divided by two equals area. Fill in the blanks on the grid!"),
   ];
 }
 
